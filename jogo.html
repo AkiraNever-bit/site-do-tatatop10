@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Ping Pong</title>
+    <style>
+        body { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+            background-color: #000; 
+            color: #fff; 
+        }
+        canvas { 
+            border: 1px solid #fff; 
+            background: #111; 
+        }
+    </style>
+</head>
+<body>
+    <h1>Pong Game</h1>
+    <div>
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
+    </div>
+    <div>
+        <p>Vida do Player 1: <span id="livesPlayer1">3</span></p>
+        <p>Vida do Player 2: <span id="livesPlayer2">3</span></p>
+    </div>
+    
+    <script>
+        var canvas = document.getElementById("gameCanvas");
+        var context = canvas.getContext("2d");
+
+        var paddleHeight = 75, paddleWidth = 10;
+        var player1Y = (canvas.height - paddleHeight) / 2;
+        var player2Y = (canvas.height - paddleHeight) / 2;
+        var paddleSpeed = 5;
+
+        var ballRadius = 10;
+        var x = canvas.width / 2;
+        var y = canvas.height / 2;
+        var dx = 2;
+        var dy = 2;
+
+        var player1Lives = 3;
+        var player2Lives = 3;
+
+        document.addEventListener("keydown", keyDownHandler);
+        document.addEventListener("keyup", keyUpHandler);
+        
+        var upPressed = false;
+        var downPressed = false;
+        var wPressed = false;
+        var sPressed = false;
+
+        function keyDownHandler(e) {
+            if (e.key === "ArrowUp") upPressed = true;
+            if (e.key === "ArrowDown") downPressed = true;
+            if (e.key === "w") wPressed = true;
+            if (e.key === "s") sPressed = true;
+        }
+
+        function keyUpHandler(e) {
+            if (e.key === "ArrowUp") upPressed = false;
+            if (e.key === "ArrowDown") downPressed = false;
+            if (e.key === "w") wPressed = false;
+            if (e.key === "s") sPressed = false;
+        }
+
+        function drawPaddle(x, y) {
+            context.fillStyle = "#fff";
+            context.fillRect(x, y, paddleWidth, paddleHeight);
+        }
+
+        function drawBall() {
+            context.beginPath();
+            context.arc(x, y, ballRadius, 0, Math.PI * 2);
+            context.fillStyle = "#fff";
+            context.fill();
+            context.closePath();
+        }
+
+        function draw() {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            drawPaddle(0, player1Y);
+            drawPaddle(canvas.width - paddleWidth, player2Y);
+            drawBall();
+
+            if (upPressed && player2Y > 0) player2Y -= paddleSpeed;
+            if (downPressed && player2Y < canvas.height - paddleHeight) player2Y += paddleSpeed;
+            if (wPressed && player1Y > 0) player1Y -= paddleSpeed;
+            if (sPressed && player1Y < canvas.height - paddleHeight) player1Y += paddleSpeed;
+
+            x += dx;
+            y += dy;
+
+            if (y + dy > canvas.height - ballRadius || y + dy < ballRadius) {
+                dy = -dy;
+            }
+
+            if (x + dx > canvas.width - ballRadius) {
+                if (y > player2Y && y < player2Y + paddleHeight) {
+                    dx = -dx;
+                } else {
+                    player1Lives--;
+                    resetBall();
+                    checkGameOver();
+                }
+            }
+
+            if (x + dx < ballRadius) {
+                if (y > player1Y && y < player1Y + paddleHeight) {
+                    dx = -dx;
+                } else {
+                    player2Lives--;
+                    resetBall();
+                    checkGameOver();
+                }
+            }
+
+            document.getElementById("livesPlayer1").innerText = player1Lives;
+            document.getElementById("livesPlayer2").innerText = player2Lives;
+
+            requestAnimationFrame(draw);
+        }
+
+        function resetBall() {
+            x = canvas.width / 2;
+            y = canvas.height / 2;
+            dx = -dx;
+        }
+
+        function checkGameOver() {
+            if (player1Lives <= 0) {
+                alert("O Jogador 2 ganhou!");
+                document.location.reload();
+            } else if (player2Lives <= 0) {
+                alert("O Jogador 1 ganhou!");
+                document.location.reload();
+            }
+        }
+
+        draw();
+    </script>
+</body>
+</html>
